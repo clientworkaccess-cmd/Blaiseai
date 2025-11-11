@@ -1,5 +1,18 @@
+import { Session, User } from '@supabase/supabase-js';
 
-import { User, Session } from '@supabase/supabase-js';
+export type ToastType = 'success' | 'error' | 'info';
+
+export interface ToastMessage {
+  id: number;
+  message: string;
+  type: ToastType;
+}
+
+export interface AuthContextType {
+  session: Session | null;
+  user: User | null;
+  loading: boolean;
+}
 
 export enum FileStatus {
   Processing = 'processing',
@@ -8,26 +21,13 @@ export enum FileStatus {
 }
 
 export interface FileRecord {
-  id: number;
+  id: string;
   created_at: string;
-  user_id: string;
   name: string;
   category: string;
   size_mb: number;
-  upload_date: string;
   status: FileStatus;
-}
-
-export interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-}
-
-export type ToastType = 'success' | 'error' | 'info';
-
-export interface ToastMessage {
-  id: number;
-  message: string;
-  type: ToastType;
+  video_url?: string;
+  upload_date: string;
+  mime_type?: string;
 }

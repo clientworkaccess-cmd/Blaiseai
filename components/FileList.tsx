@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { useToast } from '../hooks/useToast';
@@ -68,9 +67,23 @@ export const FileList: React.FC = () => {
         console.log('Change received!', payload);
         const updatedFile = payload.new as FileRecord;
         const oldFile = payload.old as FileRecord;
-        setFiles(currentFiles =>
-          currentFiles.map(file => (file.id === updatedFile.id ? updatedFile : file))
-        );
+        
+        setFiles(currentFiles => {
+            const fileExists = currentFiles.some(f => f.id === updatedFile.id);
+            if (fileExists) {
+                return currentFiles.map(file => (file.id === updatedFile.id ? updatedFile : file));
+            }
+            // If it's a new file, add it to the top of the list (if on the first page)
+            if (page === 0) {
+                return [updatedFile, ...currentFiles].slice(0, PAGE_SIZE);
+            }
+            return currentFiles;
+        });
+
+        if (payload.eventType === 'INSERT' && page === 0) {
+             setCount(currentCount => (currentCount || 0) + 1);
+        }
+
         if (oldFile?.status === 'processing' && (updatedFile.status === 'processed' || updatedFile.status === 'failed')) {
           addToast(`File "${updatedFile.name}" is now ${updatedFile.status}.`, updatedFile.status === 'processed' ? 'success' : 'error');
         }
@@ -80,7 +93,7 @@ export const FileList: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [addToast]);
+  }, [addToast, page]);
 
   const handleDelete = async () => {
     if (!fileToDelete) return;
@@ -90,6 +103,7 @@ export const FileList: React.FC = () => {
       if (error) throw error;
       addToast(`File "${fileToDelete.name}" deleted successfully.`, 'success');
       setFiles(files.filter(f => f.id !== fileToDelete.id));
+      setCount(currentCount => (currentCount || 1) - 1);
       setIsModalOpen(false);
       setFileToDelete(null);
     } catch (error: any) {
@@ -131,15 +145,16 @@ export const FileList: React.FC = () => {
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Category</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Size (MB)</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Video Link</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Uploaded</th>
                     <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {loading ? (
-                    <tr><td colSpan={6} className="text-center p-6 text-gray-500">Loading...</td></tr>
+                    <tr><td colSpan={7} className="text-center p-6 text-gray-500">Loading...</td></tr>
                   ) : files.length === 0 ? (
-                     <tr><td colSpan={6} className="text-center p-6 text-gray-500">No files found.</td></tr>
+                     <tr><td colSpan={7} className="text-center p-6 text-gray-500">No files found.</td></tr>
                   ) : (
                     files.map((file) => (
                       <tr key={file.id}>
@@ -148,6 +163,15 @@ export const FileList: React.FC = () => {
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{file.size_mb.toFixed(2)}</td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           <StatusBadge status={file.status} />
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                           {file.video_url ? (
+                            <a href={file.video_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-900 truncate" style={{maxWidth: '150px', display: 'inline-block'}}>
+                              View Video
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">N/A</span>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{new Date(file.upload_date).toLocaleDateString()}</td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
