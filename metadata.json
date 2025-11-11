@@ -1,0 +1,5 @@
+{
+  "name": "Blaise KB Manager",
+  "description": "A Supabase-powered Admin Dashboard for Managing AI Knowledge Base Files. Users can upload, view, search, and manage KB files with real-time status updates.",
+  "requestFramePermissions": []
+}
