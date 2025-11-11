@@ -93,7 +93,7 @@ export const TranscriptUpload: React.FC = () => {
 
             <div className="mt-4">
                 <label htmlFor="transcript-content" className="block text-sm font-medium text-gray-700">
-                    Transcript Content
+                    Transcript Content & Video URL
                 </label>
                 <div className="mt-1">
                     <textarea
@@ -102,7 +102,7 @@ export const TranscriptUpload: React.FC = () => {
                         className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         value={transcript}
                         onChange={(e) => setTranscript(e.target.value)}
-                        placeholder="Paste your transcript here..."
+                        placeholder="Paste your transcript and video URL here..."
                         required
                     />
                 </div>
