@@ -84,7 +84,7 @@ export const FileList: React.FC = () => {
              setCount(currentCount => (currentCount || 0) + 1);
         }
 
-        if (oldFile?.status === 'processing' && (updatedFile.status === 'processed' || updatedFile.status === 'failed')) {
+        if (oldFile && oldFile.status !== updatedFile.status && (updatedFile.status === 'processed' || updatedFile.status === 'failed')) {
           addToast(`File "${updatedFile.name}" is now ${updatedFile.status}.`, updatedFile.status === 'processed' ? 'success' : 'error');
         }
       })

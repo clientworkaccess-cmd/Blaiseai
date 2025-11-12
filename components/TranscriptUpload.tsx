@@ -36,7 +36,7 @@ export const TranscriptUpload: React.FC = () => {
                 name: file.name,
                 category: category.trim(),
                 size_mb: file.size / 1024 / 1024,
-                status: 'processing',
+                status: 'processed',
                 upload_date: new Date().toISOString(),
                 mime_type: file.type,
                 video_url: videoUrl.trim() || null,
@@ -47,7 +47,7 @@ export const TranscriptUpload: React.FC = () => {
             // Step 2: Send the file to the webhook for processing
             await uploadFileToWebhook(file, user.email!, videoUrl || undefined);
             
-            addToast('Transcript upload initiated! Status will update shortly.', 'success');
+            addToast('Transcript uploaded successfully!', 'success');
             setTranscript('');
             setFileName('');
             setVideoUrl('');

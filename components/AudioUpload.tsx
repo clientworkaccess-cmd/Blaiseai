@@ -45,7 +45,7 @@ export const AudioUpload: React.FC = () => {
           name: file.name,
           category: 'Audio',
           size_mb: file.size / 1024 / 1024,
-          status: 'processing',
+          status: 'processed',
           upload_date: new Date().toISOString(),
           mime_type: file.type,
       });
@@ -55,7 +55,7 @@ export const AudioUpload: React.FC = () => {
       // Step 2: Send the file to the dedicated audio webhook
       await uploadAudioToWebhook(file, user.email!);
 
-      addToast('Audio upload initiated! Status will update shortly.', 'success');
+      addToast('Audio uploaded successfully!', 'success');
       setFile(null);
     } catch (error: any) {
       addToast(`Upload failed: ${error.message}`, 'error');

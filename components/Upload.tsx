@@ -46,7 +46,7 @@ const GeneralUpload: React.FC = () => {
                 name: file.name,
                 category: category.trim(),
                 size_mb: file.size / 1024 / 1024,
-                status: 'processing',
+                status: 'processed',
                 upload_date: new Date().toISOString(),
                 mime_type: file.type,
                 video_url: videoUrl.trim() || null,
@@ -57,7 +57,7 @@ const GeneralUpload: React.FC = () => {
             // Step 2: Send the file to the webhook for processing
             await uploadFileToWebhook(file, user.email!, videoUrl || undefined);
             
-            addToast('File upload initiated! Status will update shortly.', 'success');
+            addToast('File uploaded successfully!', 'success');
             setFile(null);
             setCategory('');
             setVideoUrl('');
