@@ -1,9 +1,14 @@
+
 const GENERAL_WEBHOOK_URL = 'https://n8n.srv927950.hstgr.cloud/webhook/0ac9a895-a1f1-4431-a93c-e4095904fa9e';
 const AUDIO_WEBHOOK_URL = 'https://n8n.srv927950.hstgr.cloud/webhook/audio-transcript';
 const GITHUB_WEBHOOK_URL = 'https://n8n.srv927950.hstgr.cloud/webhook/webhook-github';
+const SLACK_WEBHOOK_URL = 'https://n8n.srv927950.hstgr.cloud/webhook/slack-webhook'; 
 
 const GITHUB_CLIENT_ID = 'Ov23li01i7Gi0jKZVgNh';
 const GITHUB_CLIENT_SECRET = 'dda77885c579a94201d4d001d990f20151cf2078';
+
+const SLACK_CLIENT_ID = '1557536440852.10027499063362';
+const SLACK_CLIENT_SECRET = '3ca81b8bd632aa70c38ef1fb7ec2e633';
 
 const uploadToWebhook = async (url: string, file: File, email: string, videoUrl?: string): Promise<Response> => {
   const formData = new FormData();
@@ -63,6 +68,35 @@ export const sendGitHubCodeToWebhook = async (code: string, email: string, name:
         return response;
     } catch (error) {
         console.error('Error sending GitHub code to webhook:', error);
+        throw error;
+    }
+};
+
+export const sendSlackCodeToWebhook = async (code: string, email: string, name: string): Promise<Response> => {
+    const payload = {
+        code,
+        client_id: SLACK_CLIENT_ID,
+        client_secret: SLACK_CLIENT_SECRET,
+        email,
+        name,
+        grant_type: 'authorization_code'
+    };
+
+    try {
+        const response = await fetch(SLACK_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+             throw new Error(`Webhook failed with status: ${response.status}`);
+        }
+        return response;
+    } catch (error) {
+        console.error('Error sending Slack code to webhook:', error);
         throw error;
     }
 };
