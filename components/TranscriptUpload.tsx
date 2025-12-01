@@ -17,21 +17,17 @@ export const TranscriptUpload: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async () => {
-        if (!transcript.trim() || !fileName.trim() || !category.trim()) {
-            addToast('Please provide a file name, category, and transcript content.', 'error');
-            return;
-        }
-        if (!user) {
-            addToast('You must be logged in to upload.', 'error');
-            return;
-        }
+        if (!transcript.trim() || !fileName.trim()) return addToast('Missing content or filename.', 'error');
+        if (!user) return addToast('Auth required.', 'error');
+
         setLoading(true);
         try {
-            const blob = new Blob([transcript], { type: 'text/plain' });
-            const file = new File([blob], `${fileName.trim()}.txt`, { type: 'text/plain' });
+            let fileContent = transcript;
+            if (videoUrl.trim()) fileContent = `Video URL: ${videoUrl.trim()}\n\n${transcript}`;
 
-            // Step 1: Insert metadata into Supabase first
-            const { error: insertError } = await supabase.from('files').insert({
+            const file = new File([new Blob([fileContent], { type: 'text/plain' })], `${fileName.trim()}.txt`, { type: 'text/plain' });
+
+            const { error } = await supabase.from('files').insert({
                 user_id: user.id,
                 name: file.name,
                 category: category.trim(),
@@ -42,87 +38,46 @@ export const TranscriptUpload: React.FC = () => {
                 video_url: videoUrl.trim() || null,
             });
 
-            if (insertError) throw insertError;
-
-            // Step 2: Send the file to the webhook for processing
+            if (error) throw error;
             await uploadFileToWebhook(file, user.email!, videoUrl || undefined);
             
-            addToast('Transcript uploaded successfully!', 'success');
+            addToast('Transcript saved.', 'success');
             setTranscript('');
             setFileName('');
             setVideoUrl('');
-            setCategory('Transcript');
-
         } catch (error: any) {
-            addToast(`Upload failed: ${error.message}`, 'error');
+            addToast(error.message, 'error');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Card>
-            <h3 className="text-lg font-medium text-gray-900">Upload Transcript</h3>
-            <p className="mt-1 text-sm text-gray-500">
-                Paste a transcript below. It will be saved as a .txt file and added to the knowledge base.
-            </p>
-
-            <div className="mt-4">
-                <Input
-                    id="file-name"
-                    label="File Name (without extension)"
-                    type="text"
-                    value={fileName}
-                    onChange={(e) => setFileName(e.target.value)}
-                    placeholder="e.g., Meeting Notes 2024-01-01"
-                    required
-                />
-            </div>
-
-            <div className="mt-4">
-                <Input
-                    id="category-transcript"
-                    label="Category"
-                    type="text"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g., Meeting Transcripts"
-                    required
-                />
-            </div>
-
-            <div className="mt-4">
-                <label htmlFor="transcript-content" className="block text-sm font-medium text-gray-700">
-                    Transcript Content & Video URL
-                </label>
-                <div className="mt-1">
+        <Card title="Upload Transcript" description="Paste text directly into the knowledge base.">
+            <div className="space-y-6 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input id="fileName" label="File Name" value={fileName} onChange={(e) => setFileName(e.target.value)} placeholder="Meeting Notes" />
+                    <Input id="category" label="Category" value={category} onChange={(e) => setCategory(e.target.value)} />
+                </div>
+                
+                <div className="space-y-2">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase">Content</label>
                     <textarea
-                        id="transcript-content"
-                        rows={10}
-                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="w-full bg-zinc-900/50 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-zinc-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none min-h-[300px] font-mono leading-relaxed"
                         value={transcript}
                         onChange={(e) => setTranscript(e.target.value)}
-                        placeholder="Paste your transcript and video URL here..."
-                        required
+                        placeholder="Paste text content here..."
                     />
                 </div>
-            </div>
 
-            <div className="mt-4">
-                <Input
-                    id="video-url-transcript"
-                    label="Associated Video URL (Optional)"
-                    type="url"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <Input id="videoUrl" label="Video URL (Optional)" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://" />
+                     <div className="hidden md:block"></div>
+                </div>
             </div>
             
-            <div className="mt-6 text-right">
-                <Button onClick={handleSubmit} isLoading={loading} disabled={!transcript.trim() || !fileName.trim() || !category.trim()}>
-                    Upload Transcript
-                </Button>
+            <div className="mt-8 flex justify-end">
+                <Button onClick={handleSubmit} isLoading={loading} disabled={!transcript.trim()}>Save Transcript</Button>
             </div>
         </Card>
     );

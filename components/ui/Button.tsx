@@ -1,8 +1,7 @@
 import React from 'react';
 
-// FIX: Added a `size` prop to the Button component to fix an invalid prop error and allow for different button sizes.
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
   isLoading?: boolean;
   size?: 'small' | 'medium' | 'large';
 }
@@ -16,16 +15,17 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses =
-    'inline-flex items-center justify-center border border-transparent font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200';
+    'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed rounded-lg border';
 
   const variantClasses = {
-    primary: 'text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500',
-    secondary: 'text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:ring-indigo-500',
-    danger: 'text-white bg-rose-600 hover:bg-rose-700 focus:ring-rose-500',
+    primary: 'border-transparent bg-white text-black hover:bg-zinc-200 shadow-[0_0_15px_rgba(255,255,255,0.1)]',
+    secondary: 'border-white/10 bg-white/5 text-white hover:bg-white/10',
+    danger: 'border-rose-500/20 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/30',
+    ghost: 'border-transparent text-zinc-400 hover:text-white hover:bg-white/5',
   };
 
   const sizeClasses = {
-    small: 'px-2.5 py-1.5 text-xs',
+    small: 'px-3 py-1.5 text-xs',
     medium: 'px-4 py-2 text-sm',
     large: 'px-6 py-3 text-base',
   };
@@ -36,22 +36,17 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={isLoading || props.disabled}
       {...props}
     >
-      {isLoading && (
-        <svg
-          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
+      {isLoading ? (
+        <div className="flex items-center space-x-2">
+            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Processing</span>
+        </div>
+      ) : (
+        children
       )}
-      {children}
     </button>
   );
 };

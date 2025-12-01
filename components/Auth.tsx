@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { useToast } from '../hooks/useToast';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { Card } from './ui/Card';
 
 export const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,80 +14,69 @@ export const Auth: React.FC = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        addToast('Login successful!', 'success');
-      } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        addToast('Check your email for the confirmation link!', 'info');
-      }
+      const { error } = isLogin 
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({ email, password });
+        
+      if (error) throw error;
+      if (!isLogin) addToast('Check email for confirmation.', 'info');
     } catch (error: any) {
-      addToast(error.error_description || error.message, 'error');
+      addToast(error.message, 'error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-         <svg className="mx-auto h-12 w-auto text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" />
-        </svg>
-        <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Blaise KB Manager</h2>
-        <p className="mt-2 text-sm text-gray-600">
-          {isLogin ? 'Sign in to your account' : 'Create a new account'}
+    <div className="min-h-screen flex items-center justify-center bg-black relative overflow-hidden">
+      <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+      
+      <div className="w-full max-w-md p-8 relative z-10">
+        <div className="mb-10 text-center">
+            <div className="h-12 w-12 mx-auto bg-white rounded-xl flex items-center justify-center mb-6 shadow-glow">
+                <span className="text-2xl font-bold text-black">B</span>
+            </div>
+            <h2 className="text-2xl font-bold text-white font-display tracking-tight">
+                {isLogin ? 'Sign in to Blaise' : 'Create your account'}
+            </h2>
+            <p className="mt-2 text-zinc-400">
+                {isLogin ? 'Welcome back, admin.' : 'Get started with your knowledge base.'}
+            </p>
+        </div>
+
+        <div className="bg-zinc-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
+            <form onSubmit={handleAuth} className="space-y-5">
+                <Input
+                    id="email"
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="name@company.com"
+                />
+                <Input
+                    id="password"
+                    label="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                />
+                <Button type="submit" isLoading={loading} className="w-full" variant="primary">
+                    {isLogin ? 'Sign In' : 'Sign Up'}
+                </Button>
+            </form>
+        </div>
+
+        <p className="mt-6 text-center text-sm text-zinc-500">
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button onClick={() => setIsLogin(!isLogin)} className="text-white hover:underline font-medium">
+                {isLogin ? 'Sign up' : 'Log in'}
+            </button>
         </p>
-      </div>
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card>
-          <form className="space-y-6" onSubmit={handleAuth}>
-            <Input
-              id="email"
-              label="Email address"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Input
-              id="password"
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <div>
-              <Button type="submit" isLoading={loading} className="w-full">
-                {isLogin ? 'Sign in' : 'Sign up'}
-              </Button>
-            </div>
-          </form>
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  {isLogin ? "Don't have an account?" : 'Already have an account?'}
-                </span>
-              </div>
-            </div>
-            <div className="mt-6">
-              <Button variant="secondary" onClick={() => setIsLogin(!isLogin)} className="w-full">
-                {isLogin ? 'Create an account' : 'Sign in'}
-              </Button>
-            </div>
-          </div>
-        </Card>
       </div>
     </div>
   );

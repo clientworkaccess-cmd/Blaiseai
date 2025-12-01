@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -14,42 +13,42 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
 
   return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-40 animate-fadeIn"
-      aria-hidden="true"
-      onClick={onClose}
+      className="fixed inset-0 z-50 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
     >
-      <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-          <div
-            className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg animate-slideInUp"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="sm:flex sm:items-start">
-                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 sm:mx-0 sm:h-10 sm:w-10">
-                  <svg className="h-6 w-6 text-rose-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                  </svg>
-                </div>
-                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                  <h3 className="text-lg font-medium leading-6 text-gray-900" id="modal-title">
-                    {title}
-                  </h3>
-                  <div className="mt-2">
-                    {children}
-                  </div>
+      <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+        <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-fadeIn" 
+            aria-hidden="true" 
+            onClick={onClose}
+        />
+
+        <div
+          className="relative transform overflow-hidden rounded-3xl bg-zinc-900/80 backdrop-blur-xl border border-white/10 text-left shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all sm:my-8 sm:w-full sm:max-w-lg animate-fadeIn"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="px-6 py-6 sm:p-8">
+            <div className="sm:flex sm:items-start">
+              <div className="text-center sm:text-left w-full">
+                <h3 className="text-2xl font-bold leading-6 text-white font-display" id="modal-title">
+                  {title}
+                </h3>
+                <div className="mt-6">
+                  {children}
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-              <button
-                type="button"
-                className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={onClose}
-              >
-                Cancel
-              </button>
-            </div>
+          </div>
+          <div className="bg-white/5 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-8 border-t border-white/5">
+            <button
+              type="button"
+              className="inline-flex w-full justify-center rounded-xl bg-white text-zinc-950 px-5 py-3 text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-900 sm:ml-3 sm:w-auto transition-all duration-200"
+              onClick={onClose}
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

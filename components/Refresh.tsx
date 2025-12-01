@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '../hooks/useToast';
 import { Button } from './ui/Button';
@@ -10,35 +9,29 @@ export const Refresh: React.FC = () => {
 
   const handleRefresh = () => {
     setLoading(true);
-    addToast('Knowledge base refresh initiated...', 'info');
-    // Mocking an async operation like a Supabase Edge Function call
+    addToast('Sync started...', 'info');
     setTimeout(() => {
       setLoading(false);
-      addToast('Knowledge base successfully refreshed!', 'success');
+      addToast('Sync complete.', 'success');
     }, 2500);
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-gray-900">Refresh Knowledge Base</h1>
-      <div className="mt-8 max-w-2xl">
-        <Card>
-          <div className="text-center">
-             <svg className="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+    <div className="max-w-md mx-auto mt-20">
+      <Card className="text-center py-12">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-6">
+            <svg className="h-8 w-8 text-white animate-spin-slow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-11.667 0a8.25 8.25 0 0111.667 0l3.181 3.183M2.985 19.644l3.181-3.183m0 0a8.25 8.25 0 0111.667 0l3.181 3.183" />
             </svg>
-            <h3 className="mt-2 text-lg font-medium text-gray-900">Refresh AI Knowledge Base</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Click the button below to trigger a full refresh of the AI's knowledge base. This will process all new and updated files.
-            </p>
-            <div className="mt-6">
-              <Button onClick={handleRefresh} isLoading={loading} size="large">
-                Refresh Knowledge Base
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2">Sync Knowledge Base</h3>
+        <p className="text-zinc-400 mb-8 text-sm px-4">
+            Manually trigger a re-index to ensure the AI has the latest document changes.
+        </p>
+        <Button onClick={handleRefresh} isLoading={loading} className="w-full">
+            Start Sync
+        </Button>
+      </Card>
     </div>
   );
 };

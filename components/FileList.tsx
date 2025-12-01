@@ -5,17 +5,22 @@ import { FileRecord, FileStatus } from '../types';
 import { Button } from './ui/Button';
 import { Modal } from './ui/Modal';
 import { Input } from './ui/Input';
+import { Card } from './ui/Card';
 
 const PAGE_SIZE = 10;
 
 const StatusBadge: React.FC<{ status: FileStatus }> = ({ status }) => {
-  const baseClasses = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full';
-  const statusClasses = {
-    [FileStatus.Processing]: 'bg-yellow-100 text-yellow-800',
-    [FileStatus.Processed]: 'bg-emerald-100 text-emerald-800',
-    [FileStatus.Failed]: 'bg-rose-100 text-rose-800',
+  const styles = {
+    [FileStatus.Processing]: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    [FileStatus.Processed]: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    [FileStatus.Failed]: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
   };
-  return <span className={`${baseClasses} ${statusClasses[status]}`}>{status}</span>;
+
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${styles[status]}`}>
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
+  );
 };
 
 export const FileList: React.FC = () => {
@@ -64,142 +69,99 @@ export const FileList: React.FC = () => {
   useEffect(() => {
     const channel = supabase.channel('public:files')
       .on<FileRecord>('postgres_changes', { event: '*', schema: 'public', table: 'files' }, payload => {
-        console.log('Change received!', payload);
-        const updatedFile = payload.new as FileRecord;
-        const oldFile = payload.old as FileRecord;
-        
-        setFiles(currentFiles => {
-            const fileExists = currentFiles.some(f => f.id === updatedFile.id);
-            if (fileExists) {
-                return currentFiles.map(file => (file.id === updatedFile.id ? updatedFile : file));
-            }
-            // If it's a new file, add it to the top of the list (if on the first page)
-            if (page === 0) {
-                return [updatedFile, ...currentFiles].slice(0, PAGE_SIZE);
-            }
-            return currentFiles;
-        });
-
-        if (payload.eventType === 'INSERT' && page === 0) {
-             setCount(currentCount => (currentCount || 0) + 1);
-        }
-
-        if (oldFile && oldFile.status !== updatedFile.status && (updatedFile.status === 'processed' || updatedFile.status === 'failed')) {
-          addToast(`File "${updatedFile.name}" is now ${updatedFile.status}.`, updatedFile.status === 'processed' ? 'success' : 'error');
-        }
+        fetchFiles(); // Refresh on changes
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [addToast, page]);
+  }, [fetchFiles]);
 
   const handleDelete = async () => {
     if (!fileToDelete) return;
-
     try {
       const { error } = await supabase.from('files').delete().match({ id: fileToDelete.id });
       if (error) throw error;
-      addToast(`File "${fileToDelete.name}" deleted successfully.`, 'success');
+      addToast('File deleted successfully.', 'success');
       setFiles(files.filter(f => f.id !== fileToDelete.id));
-      setCount(currentCount => (currentCount || 1) - 1);
       setIsModalOpen(false);
       setFileToDelete(null);
     } catch (error: any) {
-      addToast(`Error deleting file: ${error.message}`, 'error');
+      addToast(error.message, 'error');
     }
   };
-  
-  const openDeleteModal = (file: FileRecord) => {
-    setFileToDelete(file);
-    setIsModalOpen(true);
-  };
-
-  const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 0;
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-gray-900">File List</h1>
-      <div className="mt-4">
-        <Input 
-          id="search"
-          type="text"
-          placeholder="Search by name or category..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setPage(0);
-          }}
-        />
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="relative w-full sm:w-72">
+           <Input 
+            id="search"
+            placeholder="Search documents..."
+            value={searchTerm}
+            onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(0);
+            }}
+            />
+        </div>
+        <div className="flex items-center text-sm text-zinc-400">
+            {count !== null && <span>{count} total documents</span>}
+        </div>
       </div>
 
-      <div className="mt-8 flex flex-col">
-        <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Category</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Size (MB)</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Video Link</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Uploaded</th>
-                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6"><span className="sr-only">Actions</span></th>
+      <Card noPadding className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-sm whitespace-nowrap">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/5">
+                <th className="px-6 py-4 font-semibold text-white">Name</th>
+                <th className="px-6 py-4 font-semibold text-white">Category</th>
+                <th className="px-6 py-4 font-semibold text-white">Size</th>
+                <th className="px-6 py-4 font-semibold text-white">Status</th>
+                <th className="px-6 py-4 font-semibold text-white">Date</th>
+                <th className="px-6 py-4 font-semibold text-white text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {loading ? (
+                <tr><td colSpan={6} className="px-6 py-12 text-center text-zinc-500">Loading data...</td></tr>
+              ) : files.length === 0 ? (
+                <tr><td colSpan={6} className="px-6 py-12 text-center text-zinc-500">No documents found.</td></tr>
+              ) : (
+                files.map((file) => (
+                  <tr key={file.id} className="hover:bg-white/5 transition-colors group">
+                    <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
+                         <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                         </svg>
+                        {file.name}
+                    </td>
+                    <td className="px-6 py-4 text-zinc-400">{file.category}</td>
+                    <td className="px-6 py-4 text-zinc-500 font-mono text-xs">{file.size_mb.toFixed(2)} MB</td>
+                    <td className="px-6 py-4"><StatusBadge status={file.status} /></td>
+                    <td className="px-6 py-4 text-zinc-500">{new Date(file.upload_date).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-right">
+                      <button onClick={() => { setFileToDelete(file); setIsModalOpen(true); }} className="text-zinc-500 hover:text-rose-400 transition-colors">
+                        Delete
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {loading ? (
-                    <tr><td colSpan={7} className="text-center p-6 text-gray-500">Loading...</td></tr>
-                  ) : files.length === 0 ? (
-                     <tr><td colSpan={7} className="text-center p-6 text-gray-500">No files found.</td></tr>
-                  ) : (
-                    files.map((file) => (
-                      <tr key={file.id}>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{file.name}</td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{file.category}</td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{file.size_mb.toFixed(2)}</td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          <StatusBadge status={file.status} />
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                           {file.video_url ? (
-                            <a href={file.video_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-900 truncate" style={{maxWidth: '150px', display: 'inline-block'}}>
-                              View Video
-                            </a>
-                          ) : (
-                            <span className="text-gray-400">N/A</span>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{new Date(file.upload_date).toLocaleDateString()}</td>
-                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <button onClick={() => openDeleteModal(file)} className="text-rose-600 hover:text-rose-900">Delete</button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </div>
+      </Card>
 
-      {totalPages > 1 && (
-        <div className="mt-4 flex justify-between items-center">
-          <Button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>Previous</Button>
-          <span className="text-sm text-gray-700">Page {page + 1} of {totalPages}</span>
-          <Button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>Next</Button>
-        </div>
-      )}
-
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Delete File">
-        <p className="text-sm text-gray-500">Are you sure you want to delete "{fileToDelete?.name}"? This action cannot be undone.</p>
-        <div className="mt-4 flex justify-end space-x-2">
-           <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-           <Button variant="danger" onClick={handleDelete}>Delete</Button>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Delete Document">
+        <p className="text-zinc-300">
+            Permanently remove <strong className="text-white">{fileToDelete?.name}</strong> from the knowledge base? This action cannot be undone.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button variant="danger" onClick={handleDelete}>Delete</Button>
         </div>
       </Modal>
     </div>

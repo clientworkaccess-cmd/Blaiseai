@@ -19,30 +19,19 @@ const GeneralUpload: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        if (acceptedFiles.length > 0) {
-            setFile(acceptedFiles[0]);
-        }
+        if (acceptedFiles.length > 0) setFile(acceptedFiles[0]);
     }, []);
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        onDrop,
-        multiple: false,
-    });
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
 
     const handleSubmit = async () => {
-        if (!file || !category.trim()) {
-            addToast('Please select a file and provide a category.', 'error');
-            return;
-        }
-        if (!user) {
-            addToast('You must be logged in to upload.', 'error');
-            return;
-        }
+        if (!file || !category.trim()) return addToast('Missing file or category.', 'error');
+        if (!user) return addToast('Authentication required.', 'error');
+        
         setLoading(true);
         try {
-            // Step 1: Insert metadata into Supabase first
-            const { error: insertError } = await supabase.from('files').insert({
-                user_id: user.id, // FIX: Added user_id to satisfy RLS policy
+            const { error } = await supabase.from('files').insert({
+                user_id: user.id,
                 name: file.name,
                 category: category.trim(),
                 size_mb: file.size / 1024 / 1024,
@@ -52,85 +41,55 @@ const GeneralUpload: React.FC = () => {
                 video_url: videoUrl.trim() || null,
             });
 
-            if (insertError) throw insertError;
-
-            // Step 2: Send the file to the webhook for processing
+            if (error) throw error;
             await uploadFileToWebhook(file, user.email!, videoUrl || undefined);
             
-            addToast('File uploaded successfully!', 'success');
+            addToast('Upload complete.', 'success');
             setFile(null);
             setCategory('');
             setVideoUrl('');
         } catch (error: any) {
-            addToast(`Upload failed: ${error.message}`, 'error');
+            addToast(error.message, 'error');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Card>
-            <h3 className="text-lg font-medium text-gray-900">Upload Document</h3>
-            <p className="mt-1 text-sm text-gray-500">
-                Upload a document (e.g., PDF, DOCX, TXT) to be added to the knowledge base.
-            </p>
+        <Card title="Upload Document" description="Supported formats: PDF, DOCX, TXT. Maximum size: 50MB.">
             <div
                 {...getRootProps()}
-                className={`mt-4 border-2 border-dashed rounded-md px-6 pt-5 pb-6 flex justify-center ${
-                isDragActive ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300'
+                className={`mt-4 border border-dashed rounded-xl p-10 flex flex-col items-center justify-center transition-all cursor-pointer ${
+                isDragActive ? 'border-indigo-500 bg-indigo-500/5' : 'border-zinc-700 hover:border-zinc-500 hover:bg-white/5'
                 }`}
             >
-                <div className="space-y-1 text-center">
-                     <svg className="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                    </svg>
-                    <div className="flex text-sm text-gray-600">
-                        <label
-                        htmlFor="file-upload"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none"
-                        >
-                        <span>Upload a file</span>
-                        <input {...getInputProps()} id="file-upload" />
-                        </label>
-                        <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PDF, DOCX, TXT up to 50MB</p>
+                <input {...getInputProps()} />
+                <div className="h-12 w-12 rounded-lg bg-zinc-800 flex items-center justify-center mb-4">
+                     <svg className="h-6 w-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
                 </div>
+                <p className="text-sm font-medium text-white">Click or drag file to upload</p>
+                <p className="text-xs text-zinc-500 mt-1">Single file upload</p>
             </div>
 
             {file && (
-                <div className="mt-4 text-sm text-gray-700">
-                <strong>Selected file:</strong> {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                <div className="mt-4 flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 bg-indigo-500/20 text-indigo-400 rounded flex items-center justify-center">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </div>
+                        <span className="text-sm text-white font-medium">{file.name}</span>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); setFile(null); }} className="text-zinc-500 hover:text-white"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
             )}
 
-             <div className="mt-4">
-                <Input
-                    id="category"
-                    label="Category"
-                    type="text"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g., Product Manuals"
-                    required
-                />
-            </div>
-
-            <div className="mt-4">
-                <Input
-                    id="video-url"
-                    label="Associated Video URL (Optional)"
-                    type="url"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                />
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input id="category" label="Category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Sales, Technical" />
+                <Input id="videoUrl" label="Video URL (Optional)" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://" />
             </div>
             
-            <div className="mt-6 text-right">
-                <Button onClick={handleSubmit} isLoading={loading} disabled={!file || !category.trim()}>
-                    Upload File
-                </Button>
+            <div className="mt-8 flex justify-end">
+                <Button onClick={handleSubmit} isLoading={loading} disabled={!file || !category.trim()}>Upload File</Button>
             </div>
         </Card>
     );
@@ -138,63 +97,26 @@ const GeneralUpload: React.FC = () => {
 
 export const Upload: React.FC = () => {
   const [activeTab, setActiveTab] = useState('document');
-  const tabs = [
-    { id: 'document', label: 'Document' },
-    { id: 'audio', label: 'Audio' },
-    { id: 'transcript', label: 'Transcript' },
-  ];
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'audio':
-        return <AudioUpload />;
-      case 'transcript':
-        return <TranscriptUpload />;
-      case 'document':
-      default:
-        return <GeneralUpload />;
-    }
-  };
-
+  
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-gray-900">Upload Content</h1>
-      <div className="mt-8">
-        <div className="sm:hidden">
-          <label htmlFor="tabs" className="sr-only">Select a tab</label>
-          <select
-            id="tabs"
-            name="tabs"
-            className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-            onChange={(e) => setActiveTab(e.target.value)}
-            value={activeTab}
-          >
-            {tabs.map((tab) => <option key={tab.id} value={tab.id}>{tab.label}</option>)}
-          </select>
-        </div>
-        <div className="hidden sm:block">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`${
-                    tab.id === activeTab
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </div>
-        <div className="mt-6">
-            {renderContent()}
-        </div>
+    <div className="w-full space-y-6">
+      <div className="flex space-x-1 bg-zinc-900/50 p-1 rounded-xl border border-white/10 w-fit">
+        {['document', 'audio', 'transcript'].map((tab) => (
+            <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all capitalize ${
+                    activeTab === tab ? 'bg-white text-black shadow-sm' : 'text-zinc-400 hover:text-white'
+                }`}
+            >
+                {tab}
+            </button>
+        ))}
       </div>
+      
+      {activeTab === 'document' && <GeneralUpload />}
+      {activeTab === 'audio' && <AudioUpload />}
+      {activeTab === 'transcript' && <TranscriptUpload />}
     </div>
   );
 };

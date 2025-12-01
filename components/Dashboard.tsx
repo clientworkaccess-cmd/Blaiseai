@@ -6,19 +6,23 @@ import { Upload } from './Upload';
 import { Refresh } from './Refresh';
 import { Settings } from './Settings';
 import { CompanyDetails } from './CompanyDetails';
+import { Integration } from './Integration';
 
-type NavItem = 'files' | 'upload' | 'companyProfile' | 'refresh' | 'settings';
+type NavItem = 'files' | 'upload' | 'companyProfile' | 'integration' | 'refresh' | 'settings';
 
 const navigation = [
-  { name: 'Files', id: 'files', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" /></svg> },
-  { name: 'Upload', id: 'upload', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg> },
-  { name: 'Company Profile', id: 'companyProfile', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18h16.5M4.5 3h15M5.25 4.5v16.5m13.5-16.5v16.5M9 6.75h6M9 11.25h6M9 15.75h6" /></svg> },
-  { name: 'Refresh KB', id: 'refresh', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-11.667 0a8.25 8.25 0 0111.667 0l3.181 3.183M2.985 19.644l3.181-3.183m0 0a8.25 8.25 0 0111.667 0l3.181 3.183" /></svg> },
-  { name: 'Settings', id: 'settings', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-1.007 1.11-1.226.554-.22 1.196-.22 1.75 0 .554.22 1.02.684 1.11 1.226l.08 1.018c.27.09.52.21.74.35l.9.45c.52.26.88.78.91 1.35.03.57-.22 1.11-.64 1.48l-.7 1.41c-.18.36-.28.76-.28 1.17s.1 1.18.28 1.54l.7 1.41c.42.37.67.91.64 1.48-.03.57-.39 1.09-.91 1.35l-.9.45c-.22.14-.47.26-.74.35l-.08 1.018c-.09.542-.56 1.007-1.11 1.226-.554-.22-1.196-.22-1.75 0-.554-.22-1.02-.684-1.11-1.226l-.08-1.018c-.27-.09-.52-.21-.74-.35l-.9-.45c-.52-.26-.88-.78-.91-1.35-.03-.57.22-1.11.64-1.48l.7-1.41c.18-.36.28-.76.28-1.17s-.1-.81-.28-1.17l-.7-1.41c-.42-.37-.67-.91-.64-1.48.03-.57.39-1.09.91-1.35l.9-.45c.22-.14.47-.26.74.35l.08-1.018z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg> },
+  { name: 'Knowledge Base', id: 'files', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg> },
+  { name: 'Upload Content', id: 'upload', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg> },
+  { name: 'Company Profile', id: 'companyProfile', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg> },
+  { name: 'Integration', id: 'integration', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg> },
+  { name: 'Refresh Index', id: 'refresh', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-11.667 0a8.25 8.25 0 0111.667 0l3.181 3.183M2.985 19.644l3.181-3.183m0 0a8.25 8.25 0 0111.667 0l3.181 3.183" /></svg> },
+  { name: 'Settings', id: 'settings', icon: (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.43.816 1.035.816 1.73 0 .695-.32 1.3-.816 1.73m0-3.46a24.347 24.347 0 010 3.46" /></svg> },
 ];
 
 export const Dashboard: React.FC = () => {
-  const [activeNav, setActiveNav] = useState<NavItem>('files');
+  // Check if we are returning from a redirect (e.g. GitHub OAuth)
+  const initialNav = new URLSearchParams(window.location.search).has('code') ? 'integration' : 'files';
+  const [activeNav, setActiveNav] = useState<NavItem>(initialNav as NavItem);
   const { user } = useAuth();
   
   const handleLogout = async () => {
@@ -27,59 +31,95 @@ export const Dashboard: React.FC = () => {
   
   const renderContent = () => {
     switch (activeNav) {
-      case 'files':
-        return <FileList />;
-      case 'upload':
-        return <Upload />;
-      case 'companyProfile':
-        return <CompanyDetails />;
-      case 'refresh':
-        return <Refresh />;
-      case 'settings':
-        return <Settings />;
-      default:
-        return <FileList />;
+      case 'files': return <FileList />;
+      case 'upload': return <Upload />;
+      case 'companyProfile': return <CompanyDetails />;
+      case 'integration': return <Integration />;
+      case 'refresh': return <Refresh />;
+      case 'settings': return <Settings />;
+      default: return <FileList />;
     }
   };
 
+  const getPageTitle = () => {
+      const item = navigation.find(n => n.id === activeNav);
+      return item ? item.name : 'Dashboard';
+  }
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      <div className="flex flex-col w-64 bg-gray-800">
-        <div className="flex items-center justify-center h-16 bg-gray-900 text-white">
-          <svg className="h-8 w-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" />
-          </svg>
-          <span className="ml-2 text-xl font-semibold">Blaise KB</span>
+    <div className="flex h-screen bg-black text-white font-sans overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-72 flex-shrink-0 flex flex-col border-r border-white/10 bg-zinc-900/40 backdrop-blur-xl relative z-20">
+        <div className="h-16 flex items-center px-6 border-b border-white/10">
+            <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <span className="font-bold text-white text-lg">B</span>
+                </div>
+                <span className="text-lg font-bold tracking-tight font-display">Blaise KB</span>
+            </div>
         </div>
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          <nav className="flex-1 px-2 py-4 bg-gray-800">
+
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-4 px-2">Main Menu</div>
             {navigation.map((item) => (
               <button
                 key={item.name}
                 onClick={() => setActiveNav(item.id as NavItem)}
-                className={`flex items-center px-4 py-2 mt-2 text-sm font-semibold rounded-lg w-full text-left
+                className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
                   ${activeNav === item.id
-                    ? 'bg-gray-700 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    ? 'bg-white/10 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] border border-white/5'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
                   }`}
               >
-                <item.icon className="h-6 w-6 mr-3" />
+                <item.icon className={`h-5 w-5 mr-3 transition-colors ${activeNav === item.id ? 'text-indigo-400' : 'text-zinc-500 group-hover:text-zinc-300'}`} />
                 {item.name}
               </button>
             ))}
-          </nav>
-        </div>
-        <div className="p-4 border-t border-gray-700">
-            <div className="text-sm text-gray-400 truncate">{user?.email}</div>
-            <button onClick={handleLogout} className="w-full mt-2 text-left flex items-center px-4 py-2 text-sm font-semibold text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
-                <svg className="h-6 w-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
-                Logout
+        </nav>
+
+        <div className="p-4 border-t border-white/10 bg-zinc-900/50">
+            <div className="flex items-center gap-3 mb-3">
+                <div className="h-9 w-9 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-white border border-white/10">
+                    {user?.email?.[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{user?.email}</p>
+                    <p className="text-xs text-zinc-500 truncate">Administrator</p>
+                </div>
+            </div>
+            <button 
+                onClick={handleLogout} 
+                className="w-full flex items-center justify-center px-4 py-2 text-xs font-medium text-zinc-400 bg-white/5 hover:bg-white/10 hover:text-white rounded-md transition-colors border border-white/5"
+            >
+                Sign Out
             </button>
         </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0 bg-black relative">
+        {/* Ambient background for main area */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
+        <div className="absolute top-[-200px] left-[20%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
+        
+        {/* Header */}
+        <header className="h-16 flex-shrink-0 border-b border-white/10 bg-black/50 backdrop-blur-md flex items-center justify-between px-8 relative z-10">
+            <h1 className="text-xl font-semibold text-white font-display">{getPageTitle()}</h1>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                    System Online
+                </div>
+            </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-y-auto px-6 py-8 relative z-10">
+            <div className="w-full max-w-[95%] xl:max-w-[1400px] mx-auto animate-fadeIn">
+                {renderContent()}
+            </div>
+        </main>
       </div>
-      <main className="flex-1 p-6 sm:p-10 overflow-y-auto">
-        {renderContent()}
-      </main>
     </div>
   );
 };
