@@ -8,6 +8,7 @@ export const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
 
@@ -15,12 +16,22 @@ export const Auth: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = isLogin 
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
-        
-      if (error) throw error;
-      if (!isLogin) addToast('Check email for confirmation.', 'info');
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.auth.signUp({ 
+            email, 
+            password,
+            options: {
+                data: {
+                    full_name: name,
+                }
+            }
+        });
+        if (error) throw error;
+        addToast('Check email for confirmation.', 'info');
+      }
     } catch (error: any) {
       addToast(error.message, 'error');
     } finally {
@@ -47,6 +58,17 @@ export const Auth: React.FC = () => {
 
         <div className="bg-zinc-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
             <form onSubmit={handleAuth} className="space-y-5">
+                {!isLogin && (
+                    <Input
+                        id="name"
+                        label="Full Name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        placeholder="John Doe"
+                    />
+                )}
                 <Input
                     id="email"
                     label="Email"

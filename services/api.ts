@@ -38,12 +38,13 @@ export const uploadAudioToWebhook = (file: File, email: string): Promise<Respons
     return uploadToWebhook(AUDIO_WEBHOOK_URL, file, email);
 };
 
-export const sendGitHubCodeToWebhook = async (code: string, email: string): Promise<Response> => {
+export const sendGitHubCodeToWebhook = async (code: string, email: string, name: string): Promise<Response> => {
     const payload = {
         code,
         client_id: GITHUB_CLIENT_ID,
         client_secret: GITHUB_CLIENT_SECRET,
         email,
+        name,
         grant_type: 'authorization_code'
     };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
 import { sendGitHubCodeToWebhook } from '../services/api';
+import { supabase } from '../services/supabaseClient';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
 
@@ -11,6 +12,10 @@ export const Integration: React.FC = () => {
     const { user } = useAuth();
     const { addToast } = useToast();
     const [loading, setLoading] = useState(false);
+    
+    // Check if user has metadata indicating github connection
+    // We default to false if not present
+    const isConnected = user?.user_metadata?.github_connected === true;
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -27,7 +32,16 @@ export const Integration: React.FC = () => {
         window.history.replaceState({}, document.title, window.location.pathname);
         
         try {
-            await sendGitHubCodeToWebhook(code, user!.email!);
+            const name = user?.user_metadata?.full_name || 'Unknown User';
+            await sendGitHubCodeToWebhook(code, user!.email!, name);
+            
+            // Update Supabase user metadata to reflect connection
+            const { error } = await supabase.auth.updateUser({
+                data: { github_connected: true }
+            });
+
+            if (error) throw error;
+            
             addToast('GitHub connected successfully.', 'success');
         } catch (error: any) {
             addToast('Failed to connect GitHub.', 'error');
@@ -42,6 +56,24 @@ export const Integration: React.FC = () => {
         window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=repo,user&redirect_uri=${redirectUri}`;
     };
 
+    const handleDisconnect = async () => {
+        setLoading(true);
+        try {
+            // Update Supabase user metadata to remove connection status
+            const { error } = await supabase.auth.updateUser({
+                data: { github_connected: false }
+            });
+
+            if (error) throw error;
+            addToast('GitHub disconnected.', 'info');
+        } catch (error: any) {
+            addToast('Error disconnecting GitHub.', 'error');
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Card title="Integrations" description="Connect third-party tools to your knowledge base.">
             <div className="flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-xl mt-6 transition-all hover:bg-white/10">
@@ -53,12 +85,22 @@ export const Integration: React.FC = () => {
                     </div>
                     <div>
                         <h4 className="text-white font-bold text-lg">GitHub</h4>
-                        <p className="text-sm text-zinc-400">Sync repositories and pull requests.</p>
+                        <p className="text-sm text-zinc-400">
+                            {isConnected 
+                                ? 'Your repository is currently synced.' 
+                                : 'Sync repositories and pull requests.'}
+                        </p>
                     </div>
                 </div>
-                <Button onClick={handleConnect} isLoading={loading}>
-                    Connect GitHub
-                </Button>
+                {isConnected ? (
+                    <Button onClick={handleDisconnect} isLoading={loading} variant="danger">
+                        Disconnect
+                    </Button>
+                ) : (
+                    <Button onClick={handleConnect} isLoading={loading}>
+                        Connect GitHub
+                    </Button>
+                )}
             </div>
         </Card>
     );
