@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
@@ -8,17 +7,17 @@ import { Button } from './ui/Button';
 import { Card } from './ui/Card';
 
 const GITHUB_CLIENT_ID = 'Ov23li01i7Gi0jKZVgNh';
-const SLACK_CLIENT_ID = '1557536440852.10032312742838';
+const SLACK_CLIENT_ID = '1557536440852.10027499063362';
 
 export const Integration: React.FC = () => {
-    const { user } = useAuth();
+    const { user, profile, refreshProfile } = useAuth();
     const { addToast } = useToast();
     const [loadingGithub, setLoadingGithub] = useState(false);
     const [loadingSlack, setLoadingSlack] = useState(false);
     
-    // Check metadata for connections
-    const isGithubConnected = user?.user_metadata?.github_connected === true;
-    const isSlackConnected = user?.user_metadata?.slack_connected === true;
+    // Check profile table for connections
+    const isGithubConnected = profile?.github_connected === true;
+    const isSlackConnected = profile?.slack_connected === true;
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -31,8 +30,9 @@ export const Integration: React.FC = () => {
 
             if (state === 'slack') {
                 handleSlackCode(code);
+            } else if (state === 'github') {
+                handleGithubCode(code);
             } else {
-                // Default to GitHub if state is github or missing (backward compatibility)
                 handleGithubCode(code);
             }
         }
@@ -41,14 +41,16 @@ export const Integration: React.FC = () => {
     const handleGithubCode = async (code: string) => {
         setLoadingGithub(true);
         try {
-            const name = user?.user_metadata?.full_name || 'Unknown User';
+            const name = profile?.full_name || user?.user_metadata?.full_name || 'Unknown User';
             await sendGitHubCodeToWebhook(code, user!.email!, name);
             
-            const { error } = await supabase.auth.updateUser({
-                data: { github_connected: true }
-            });
+            const { error } = await supabase
+                .from('profiles')
+                .update({ github_connected: true })
+                .eq('id', user!.id);
 
             if (error) throw error;
+            await refreshProfile();
             addToast('GitHub connected successfully.', 'success');
         } catch (error: any) {
             addToast('Failed to connect GitHub.', 'error');
@@ -61,14 +63,16 @@ export const Integration: React.FC = () => {
     const handleSlackCode = async (code: string) => {
         setLoadingSlack(true);
         try {
-            const name = user?.user_metadata?.full_name || 'Unknown User';
+            const name = profile?.full_name || user?.user_metadata?.full_name || 'Unknown User';
             await sendSlackCodeToWebhook(code, user!.email!, name);
             
-            const { error } = await supabase.auth.updateUser({
-                data: { slack_connected: true }
-            });
+            const { error } = await supabase
+                .from('profiles')
+                .update({ slack_connected: true })
+                .eq('id', user!.id);
 
             if (error) throw error;
+            await refreshProfile();
             addToast('Slack connected successfully.', 'success');
         } catch (error: any) {
             addToast('Failed to connect Slack.', 'error');
@@ -80,17 +84,19 @@ export const Integration: React.FC = () => {
 
     const handleConnectGithub = () => {
         const redirectUri = window.location.origin;
-        // Added state=github
         window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=repo,user&redirect_uri=${redirectUri}&state=github`;
     };
 
     const handleDisconnectGithub = async () => {
         setLoadingGithub(true);
         try {
-            const { error } = await supabase.auth.updateUser({
-                data: { github_connected: false }
-            });
+            const { error } = await supabase
+                .from('profiles')
+                .update({ github_connected: false })
+                .eq('id', user!.id);
+
             if (error) throw error;
+            await refreshProfile();
             addToast('GitHub disconnected.', 'info');
         } catch (error: any) {
             addToast('Error disconnecting GitHub.', 'error');
@@ -100,19 +106,21 @@ export const Integration: React.FC = () => {
     };
 
     const handleConnectSlack = () => {
-        const redirectUri = window.location.origin;
-        const scopes = 'channels:read,chat:write,files:read'; // Customize these based on your needs
-        // Added state=slack
+        const redirectUri = window.location.origin; 
+        const scopes = 'channels:read,chat:write,files:read'; 
         window.location.href = `https://slack.com/oauth/v2/authorize?client_id=${SLACK_CLIENT_ID}&scope=${scopes}&redirect_uri=${redirectUri}&state=slack`;
     };
 
     const handleDisconnectSlack = async () => {
         setLoadingSlack(true);
         try {
-            const { error } = await supabase.auth.updateUser({
-                data: { slack_connected: false }
-            });
+            const { error } = await supabase
+                .from('profiles')
+                .update({ slack_connected: false })
+                .eq('id', user!.id);
+
             if (error) throw error;
+            await refreshProfile();
             addToast('Slack disconnected.', 'info');
         } catch (error: any) {
             addToast('Error disconnecting Slack.', 'error');

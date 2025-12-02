@@ -8,10 +8,21 @@ export interface ToastMessage {
   type: ToastType;
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  github_connected: boolean;
+  slack_connected: boolean;
+  avatar_url?: string;
+}
+
 export interface AuthContextType {
   session: Session | null;
   user: User | null;
+  profile: UserProfile | null;
   loading: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 export enum FileStatus {
