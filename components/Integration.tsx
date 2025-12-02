@@ -8,7 +8,7 @@ import { Button } from './ui/Button';
 import { Card } from './ui/Card';
 
 const GITHUB_CLIENT_ID = 'Ov23li01i7Gi0jKZVgNh';
-const SLACK_CLIENT_ID = '1557536440852.10027499063362';
+const SLACK_CLIENT_ID = '1557536440852.10032312742838';
 
 export const Integration: React.FC = () => {
     const { user } = useAuth();
