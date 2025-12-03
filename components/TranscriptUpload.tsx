@@ -22,11 +22,13 @@ export const TranscriptUpload: React.FC = () => {
 
         setLoading(true);
         try {
+            // Include Video URL in the text file content if provided
             let fileContent = transcript;
             if (videoUrl.trim()) fileContent = `Video URL: ${videoUrl.trim()}\n\n${transcript}`;
 
             const file = new File([new Blob([fileContent], { type: 'text/plain' })], `${fileName.trim()}.txt`, { type: 'text/plain' });
 
+            // Insert into Supabase files table
             const { error } = await supabase.from('files').insert({
                 user_id: user.id,
                 name: file.name,
@@ -35,7 +37,7 @@ export const TranscriptUpload: React.FC = () => {
                 status: 'processed',
                 upload_date: new Date().toISOString(),
                 mime_type: file.type,
-                video_url: videoUrl.trim() || null,
+                video_url: videoUrl.trim() || null, // Explicitly mapped to SQL column
             });
 
             if (error) throw error;

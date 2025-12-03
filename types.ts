@@ -15,6 +15,7 @@ export interface UserProfile {
   github_connected: boolean;
   slack_connected: boolean;
   avatar_url?: string;
+  updated_at?: string;
 }
 
 export interface AuthContextType {
@@ -33,6 +34,7 @@ export enum FileStatus {
 
 export interface FileRecord {
   id: string;
+  user_id: string;
   created_at: string;
   name: string;
   category: string;

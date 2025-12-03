@@ -15,7 +15,7 @@ export const Integration: React.FC = () => {
     const [loadingGithub, setLoadingGithub] = useState(false);
     const [loadingSlack, setLoadingSlack] = useState(false);
     
-    // Check profile table for connections
+    // Read directly from the profiles table state via context
     const isGithubConnected = profile?.github_connected === true;
     const isSlackConnected = profile?.slack_connected === true;
 
@@ -44,6 +44,7 @@ export const Integration: React.FC = () => {
             const name = profile?.full_name || user?.user_metadata?.full_name || 'Unknown User';
             await sendGitHubCodeToWebhook(code, user!.email!, name);
             
+            // Update the profiles table in Supabase
             const { error } = await supabase
                 .from('profiles')
                 .update({ github_connected: true })
@@ -66,6 +67,7 @@ export const Integration: React.FC = () => {
             const name = profile?.full_name || user?.user_metadata?.full_name || 'Unknown User';
             await sendSlackCodeToWebhook(code, user!.email!, name);
             
+            // Update the profiles table in Supabase
             const { error } = await supabase
                 .from('profiles')
                 .update({ slack_connected: true })

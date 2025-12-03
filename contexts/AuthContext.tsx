@@ -26,7 +26,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .single();
       
       if (error) {
-        console.warn('Error fetching profile:', error.message);
+        // If row doesn't exist yet (race condition with trigger), we just don't set profile yet
+        console.warn('Profile fetch warning:', error.message);
       } else {
         setProfile(data as UserProfile);
       }
@@ -38,7 +39,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     let mounted = true;
 
-    const getSession = async () => {
+    const initAuth = async () => {
         try {
             const { data: { session }, error } = await supabase.auth.getSession();
             if (error) throw error;
@@ -51,13 +52,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 }
             }
         } catch (error) {
-            console.error('Error getting session:', error);
+            console.error('Error initializing auth:', error);
         } finally {
             if (mounted) setLoading(false);
         }
     }
     
-    getSession();
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
