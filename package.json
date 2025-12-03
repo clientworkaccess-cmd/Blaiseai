@@ -11,9 +11,9 @@
   "dependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "@supabase/supabase-js": "^2.81.0",
-    "react-router-dom": "^7.9.5",
-    "react-dropzone": "^14.3.8"
+    "@supabase/supabase-js": "2.81.0",
+    "react-router-dom": "7.9.5",
+    "react-dropzone": "14.3.8"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

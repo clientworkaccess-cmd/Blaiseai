@@ -38,22 +38,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     let mounted = true;
 
-    const initAuth = async () => {
+    const getSession = async () => {
         try {
-            // Force a timeout to prevent infinite loading (2 seconds max)
-            const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve('timeout'), 2000));
-            const sessionPromise = supabase.auth.getSession();
-            
-            // Race the session fetch against the timeout
-            const result = await Promise.race([sessionPromise, timeoutPromise]);
-            
-            if (result === 'timeout') {
-                console.warn('Auth check timed out, defaulting to public state');
-                if (mounted) setLoading(false);
-                return;
-            }
-
-            const { data: { session }, error } = result as any;
+            const { data: { session }, error } = await supabase.auth.getSession();
             if (error) throw error;
             
             if (mounted) {
@@ -68,9 +55,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } finally {
             if (mounted) setLoading(false);
         }
-    };
+    }
     
-    initAuth();
+    getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
@@ -85,7 +72,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         
         // Ensure loading is set to false for auth state changes
-        setLoading(false);
+        if (_event !== 'INITIAL_SESSION') {
+             setLoading(false);
+        }
       }
     );
 
