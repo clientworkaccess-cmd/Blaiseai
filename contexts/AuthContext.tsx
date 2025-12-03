@@ -38,14 +38,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     let mounted = true;
 
-    // Failsafe timeout: If Supabase takes too long (e.g. network hang), stop loading to show UI
-    const timer = setTimeout(() => {
-        if (mounted && loading) {
-            console.warn('Auth check timed out, forcing application load.');
-            setLoading(false);
-        }
-    }, 2000); 
-
     const getSession = async () => {
         try {
             const { data: { session }, error } = await supabase.auth.getSession();
@@ -79,13 +71,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setProfile(null);
         }
         
-        if (_event !== 'INITIAL_SESSION') setLoading(false);
+        // Ensure loading is set to false for auth state changes
+        if (_event !== 'INITIAL_SESSION') {
+             setLoading(false);
+        }
       }
     );
 
     return () => {
       mounted = false;
-      clearTimeout(timer);
       subscription?.unsubscribe();
     };
   }, [fetchProfile]); 
