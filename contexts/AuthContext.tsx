@@ -40,7 +40,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const getSession = async () => {
         try {
-            const { data: { session }, error } = await supabase.auth.getSession();
+            // Race condition: If Supabase takes > 5 seconds, stop loading
+            const sessionPromise = supabase.auth.getSession();
+            const timeoutPromise = new Promise<{ data: { session: null }; error: null }>((resolve) => 
+                setTimeout(() => resolve({ data: { session: null }, error: null }), 5000)
+            );
+
+            const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
             if (error) throw error;
             
             if (mounted) {
